@@ -459,10 +459,10 @@ o= O + isobLab
 # input arguments.
 # test if there is at least one argument: if not, return an error
 args = commandArgs(trailingOnly=TRUE)
-args[1] <- "D:/data/GyGy_Dataset/acetylation-ubiquitination.csv"
-args[2] <- "DiS"
-args[3] <- "S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/raws/"
-args[4] <- "D:/data/GyGy_Dataset/vseq_graphs_3/"
+# args[1] <- "D:/data/GyGy_Dataset/acetylation-ubiquitination.csv"
+# args[2] <- "DiS"
+# args[3] <- "S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/raws/"
+# args[4] <- "D:/data/GyGy_Dataset/vseq_graphs_3/"
 # args[1] <- "D:/data/PESA_omicas/Comet-PTM-2a-5ta_Cohortes_V1/2a_Cohorte_120_V1/PESA2_TMT_ALL.for_vseq.2.csv"
 # args[2] <- "DiS"
 # args[3] <- "S:/U_Proteomica/PROYECTOS/PESA_omicas/2a_Cohorte_120_V1/Proteomics/TMT_mgf/"
