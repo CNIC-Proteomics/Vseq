@@ -2,6 +2,7 @@
 .vscode
 server_table/web.config
 server_table/data/*
+server_table/vseq/*
 
 # Except this file
 !.gitignore
