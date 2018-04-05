@@ -1,0 +1,9 @@
+# Ignore everything in this directory
+.vscode
+server_table/web.config
+server_table/data/*
+
+# Except this file
+!.gitignore
+
+.Rproj.user
