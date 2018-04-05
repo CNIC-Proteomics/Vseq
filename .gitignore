@@ -5,5 +5,5 @@ server_table/data/*
 
 # Except this file
 !.gitignore
-
+.Rhistory
 .Rproj.user
