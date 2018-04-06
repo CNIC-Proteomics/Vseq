@@ -705,7 +705,6 @@ YDAGmax <- YDAGmax[,1] - len
 ####################   Getting Survey scan information   ########################
 
 
-#dtapath <- "E:\\NT_scaf1\\4730\\"
 dtafiles <- data.frame(as.character(list.files(dtapath)))
 
 if (data_type == "DdS"){
