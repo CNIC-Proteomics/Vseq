@@ -48,6 +48,9 @@ library(tcR)
 ##monoisotopic masses aa###
 A=71.03711
 R=156.10111
+# begin: jmrc
+U=156.10111 + 0.984016
+# end: jmrc
 N=114.04293
 D=115.02694
 C=103.00919
@@ -61,7 +64,10 @@ I=113.08406
 L=113.08406
 K=128.09496
 M=131.04049
-O=M+15.996  ### oxidized Met
+# begin: jmrc
+# O=M+15.996  ### oxidized Met
+O=N+0.984016  ### deamidation
+# end: jmrc
 F=147.06841
 P=97.05276
 S=87.03203
@@ -81,10 +87,10 @@ mod4 =45.04     #Nitration
 mod5= 79.966331  #phospho
 mod6= 153.023  #??????
 
-U= M + mod
+# U= M + mod
 B= W + mod2
 J= K + 8.014199
-O= R + 10.008269
+# O= R + 10.008269
 # Ñ= Y + mod4
 # end: jmrc
 AAS <- c(A,R,N,D,C,E,G,H,L,K,M,F,P,S,T,W,Y,V,B, Sp, Tp, Yp)
@@ -372,6 +378,7 @@ isobLab = tmt  #define isobaric labeling has been used   ####
 ##monoisotopic masses aa  iTRAQ 4plex###
 a=71.03711 + isobLab
 r=156.10111 + isobLab
+u=U + isobLab
 n=114.04293 + isobLab
 d=115.02694 + isobLab
 c=103.00919 + 57.021+ isobLab
@@ -395,77 +402,22 @@ o= O + isobLab
 
 
 
-#####    preparando matriz de fragmentos experimentales    ###
+#####    input parameters    ###
 
-# begin: jmrc
-# data_type <- "DiS"
-# experimento <- "H_OW_4_1"
-# datapath <- "E:\\NT_scaf1\\"
-# dtapath <- "E:\\NT_scaf1\\RH_Heart_TMTHF_FR3.dta\\"   ###########  only to get the precursor assinged information ##################
-# # experimento <- "3_Fr7"
-# # datapath <- "F:\\carotideos\\"
-# 
-# starttime <- Sys.time()
-# 
-
-# infile = paste0(datapath, experimento, ".mgf")  ## datos de las fragmentaciones mgf
-
-# infile2 = paste0(datapath, experimento, ".csv")  ##  datos del query SQL
-
-# sql <- read.csv(infile2, sep = "\t")
-
-# fr_ns <- read.table(infile, sep = "\n")
-
-# squery <- filter(fr_ns, grepl("SCANS",  V1))
-# hsquery <- as.data.frame(substr(squery[,'V1'], 7, 20))
-# mquery <- filter(fr_ns, grepl("PEPMASS", V1))
-# cquery <- filter(fr_ns, grepl("CHARGE", V1))
-# 
-# 
-# tquery <- cbind(hsquery, mquery, cquery)
-# 
-# names(tquery)[1] <- "SCAN"
-# names(tquery)[2] <- "MASS"
-# 
-# mssquery <- gsub('PEPMASS=', '', tquery$MASS)
-# 
-# sssquery <- sub("$", ",", tquery$SCAN)
-# #sssquery <- sub("^", "'", sssquery)
-# 
-# #write.csv(sssquery, "C:\\Users\\proteomica\\Desktop\\R_projects\\PESA\\sssquery.csv")
-# 
-# 
-# spl <- colsplit.character(mssquery, split = " ", names(c("MZ", "INT")))
-# 
-# spl <- as.data.frame(spl)
-# 
-# ssl <- as.data.frame(sssquery)
-# 
-# 
-# tquery <- cbind(ssl, spl, cquery)
-# 
-# names(tquery)[1] <- "SCAN"
-# names(tquery)[2] <- "MZ"
-# names(tquery)[3] <- "INTENSITY"
-# names(tquery)[4] <- "CHARGE"
-# 
-# varcon4 <- paste0(datapath,"tquery_",experimento, ".csv")
-# 
-# write.csv(tquery, varcon4)
-
-# end: jmrc
-
-# begin: jmrc
-# input arguments.
 # test if there is at least one argument: if not, return an error
 args = commandArgs(trailingOnly=TRUE)
 
 # example 1
-# args[1] <- "D:/data/GyGy_Dataset/input_for_vseq4.csv"
+# args[1] <- "D:/data/GyGy_Dataset/acetylation-ubiquitination-WO-miss.csv"
 # args[2] <- "DdS"
 # args[3] <- "S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/raws/"
-# args[4] <- "D:/data/GyGy_Dataset/vseq_graphs_4/"
+# args[4] <- "D:/data/GyGy_Dataset/vseq_graphs_5/"
 # example 2
+# args[1] <- "D:/data/Ratones_Heteroplasmicos_HF/input_for_vseq1_2.csv"
+# args[2] <- "DdS"
+# args[3] <- "D:/data/Ratones_Heteroplasmicos_HF/liver/data_for_vseq/"
+# args[4] <- "D:/data/Ratones_Heteroplasmicos_HF/liver/vseq_graphs_4/"
+# example 3
 # args[1] <- "D:/data/PESA_omicas/Comet-PTM-2a-5ta_Cohortes_V1/2a_Cohorte_120_V1/PESA2_TMT_ALL.for_vseq.2.csv"
 # args[2] <- "DiS"
 # args[3] <- "S:/U_Proteomica/PROYECTOS/PESA_omicas/2a_Cohorte_120_V1/Proteomics/TMT_mgf/"
@@ -487,6 +439,18 @@ infile2 <- args[1]
 data_type <- args[2]
 datapath <- args[3]
 outpath <- args[4]
+
+# delete slash that are the end
+datapath = sub("[\\]*$", "", datapath)
+outpath = sub("[\\]*$", "", outpath)
+datapath = sub("[/]*$", "", datapath)
+outpath = sub("[/]*$", "", outpath)
+# add last slash
+datapath = paste0(datapath, "/")
+outpath = paste0(outpath, "/")
+# normalize paths
+datapath = normalizePath(datapath)
+outpath = normalizePath(outpath)
 
 dir.create(outpath, showWarnings = FALSE)
 

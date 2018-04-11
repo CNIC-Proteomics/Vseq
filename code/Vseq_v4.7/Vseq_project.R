@@ -5,7 +5,6 @@
 
 sub <- subset(sql, FirstScan == x)
 if(nrow(sub)==0){
-  # sub <- data.frame(1, Sequence=1, ScoreValue= 1.11,RetentionTime=1, Charge=1, ProteinDescriptions=1, ScoreID=9, MonoisotopicMass=1000)
   sub <- data.frame(1, Sequence=1, ScoreValue= 1.11,RetentionTime=1, Charge=1, ProteinDescriptions=1, ScoreID=9, ExpMh=1000)
 }
 sub_xc <- subset(sub, ScoreID == 9 )
@@ -68,7 +67,6 @@ if (z[1]=="k") {
   
 }
 
-# mim <- sub_ch_max[,"MonoisotopicMass"]
 mim <- sub_ch_max[,"ExpMh"] + 1.0078
 
 DeltaMass = mim - parental
@@ -705,49 +703,64 @@ YDAGmax <- YDAGmax[,1] - len
 ####################   Getting Survey scan information   ########################
 
 
-dtafiles <- data.frame(as.character(list.files(dtapath)))
-
-if (data_type == "DdS"){
+if (data_type == "DdS") {
+  # begin: jmrc
+  # 1: Extract the dta files when are located in the root
+  dtafiles <- data.frame(as.character(list.files(dtapath)))
+  # Or
+  # 2. Extract the dta files when are located in the subdirectory
+  # dfiles <- c()
+  # dtadirs = list.dirs(path = dtapath, full.names = TRUE, recursive = FALSE)
+  # for (dtadir in dtadirs) {
+  #   dfiles <- c( dfiles, list.files(dtadir) )
+  #   dtapath_sub <- paste0(dtadir, "/")
+  # }
+  # dtafiles <- data.frame( as.character(dfiles) )
+  # end: jmrc
   
-pauta <- as.data.frame(gregexpr("\\.", dtafiles[1,1]))  
-remove <- as.data.frame(substr(dtafiles[,1], as.numeric(pauta[1,1]+1), 50))
-remove <- data.frame(as.numeric(sub('\\..*', '', remove[,1])))
-dtamatrix <- cbind(dtafiles, remove)
-dtacolnames <- c("1","2")
-colnames(dtamatrix) <- dtacolnames
-dtamatrix <- dtamatrix[order(dtamatrix$`2`),]
+  pauta <- as.data.frame(gregexpr("\\.", dtafiles[1,1]))  
+  remove <- as.data.frame(substr(dtafiles[,1], as.numeric(pauta[1,1]+1), 50))
+  remove <- data.frame(as.numeric(sub('\\..*', '', remove[,1])))
+  dtamatrix <- cbind(dtafiles, remove)
+  dtacolnames <- c("1","2")
+  colnames(dtamatrix) <- dtacolnames
+  dtamatrix <- dtamatrix[order(dtamatrix$`2`),]
+  
+  dtamatrix <- subset(dtamatrix, dtamatrix[,2]< x)
+  dtamatrix <- dtamatrix[nrow(dtamatrix),]
+  
+  # begin: jmrc
+  # case 1: Extract the dta files when are located in the root
+  #dta_prec <- read.csv(paste0(dtapath_sub, dtamatrix[1,1]), sep = " ")
+  # case 2: Extract the dta files when are located in the subdirectory
+  dta_prec <- read.csv(paste0(dtapath, dtamatrix[1,1]), sep = " ")
+  # end: jmrc
+  
+  prec_bar <- subset(dta_prec, as.numeric(dta_prec[,1]) < massspec+3)
+  prec_bar <- subset(prec_bar, as.numeric(prec_bar[,1]) > massspec-3)
+  colnames(prec_bar) <- c("mass", "intensity")
+  
+  zero_dta <- matrix(0, nrow=nrow(prec_bar), ncol=1)
+  ccu_dta <- matrix(0.01, nrow=nrow(prec_bar), ncol= 1)
+  
+  
+  idea_dta <- prec_bar[,1] - ccu_dta
+  m_z_zoom <- c(matrix(c(idea_dta, prec_bar[,1]), 2, byrow = T)) 
+  RelInt_dta <- c(matrix(c(zero_dta, prec_bar[,2]), 2, byrow= T))
+  
+  bind_dta <- cbind(m_z_zoom, RelInt_dta)
+  # begin: jmrc
+  if ( nrow(bind_dta) > 0 ) {
+    ccu2_dta <- matrix(0.01, nrow = nrow(bind_dta))
+    bind2_dta <- bind_dta[,1] + ccu2_dta
+    morezero_dta <- matrix(0, nrow=nrow(bind2_dta))
+    bind3_dta <- c(matrix(c(bind_dta[,1], bind2_dta), 2, byrow = T))
+    bind4_dta <- c(matrix(c(RelInt_dta, morezero_dta), 2, byrow= T))
+    spec_dta <- cbind(bind3_dta, bind4_dta)
+  }
+  # end: jmrc
 
-dtamatrix <- subset(dtamatrix, dtamatrix[,2]< x)
-dtamatrix <- dtamatrix[nrow(dtamatrix),]
-
-dta_prec <- read.csv(paste0(dtapath, dtamatrix[1,1]), sep = " ")
-
-prec_bar <- subset(dta_prec, as.numeric(dta_prec[,1]) < massspec+3)
-prec_bar <- subset(prec_bar, as.numeric(prec_bar[,1]) > massspec-3)
-colnames(prec_bar) <- c("mass", "intensity")
-
-zero_dta <- matrix(0, nrow=nrow(prec_bar), ncol=1)
-ccu_dta <- matrix(0.01, nrow=nrow(prec_bar), ncol= 1)
-
-
-idea_dta <- prec_bar[,1] - ccu_dta
-m_z_zoom <- c(matrix(c(idea_dta, prec_bar[,1]), 2, byrow = T)) 
-RelInt_dta <- c(matrix(c(zero_dta, prec_bar[,2]), 2, byrow= T))
-
-bind_dta <- cbind(m_z_zoom, RelInt_dta)
-# begin: jmrc
-if ( nrow(bind_dta) > 0 ) {
-  ccu2_dta <- matrix(0.01, nrow = nrow(bind_dta))
-  bind2_dta <- bind_dta[,1] + ccu2_dta
-  morezero_dta <- matrix(0, nrow=nrow(bind2_dta))
-  bind3_dta <- c(matrix(c(bind_dta[,1], bind2_dta), 2, byrow = T))
-  bind4_dta <- c(matrix(c(RelInt_dta, morezero_dta), 2, byrow= T))
-  spec_dta <- cbind(bind3_dta, bind4_dta)
-}
-# end: jmrc
-
-
-specpar_dta <- paste( "MZ=", massspec,",", "Charge=", chargespec, ",Scan=", dtamatrix[,2])
+  specpar_dta <- paste( "MZ=", massspec,",", "Charge=", chargespec, ",Scan=", dtamatrix[,2])
 }
 
 #################################################################
