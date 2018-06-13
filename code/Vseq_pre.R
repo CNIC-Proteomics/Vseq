@@ -12,16 +12,15 @@
 ##  ##
 ##
 
-# begin: jmrc
-.libPaths("C:/Users/jmrodriguezc/Documents/R/win-library/3.4")
-# end: jmrc
-
 starttime <- Sys.time()
 
 ##########  instalacion de Biostrings   @#########################
 # source("https://bioconductor.org/biocLite.R")
 # biocLite("Biostrings")
 
+# begin: jmrc
+.libPaths("D:/R/win-library/3.5")
+# end: jmrc
 
 library(Maeswrap)
 library(data.table)
@@ -31,7 +30,6 @@ library(reshape)
 library(MASS)
 library(gridExtra)
 library(grid)
-library(plotrix)
 library(rJava)
 library(xlsx)
 library(sqldf)
@@ -407,70 +405,75 @@ o= O + isobLab
 # test if there is at least one argument: if not, return an error
 args = commandArgs(trailingOnly=TRUE)
 
-# example 1
-# args[1] <- "D:/data/GyGy_Dataset/acetylation-ubiquitination-WO-miss.csv"
-# args[2] <- "DdS"
-# args[3] <- "S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/raws/"
-# args[4] <- "D:/data/GyGy_Dataset/vseq_graphs_5/"
-# example 2
-# args[1] <- "D:/data/Ratones_Heteroplasmicos_HF/input_for_vseq1_2.csv"
-# args[2] <- "DdS"
-# args[3] <- "D:/data/Ratones_Heteroplasmicos_HF/liver/data_for_vseq/"
-# args[4] <- "D:/data/Ratones_Heteroplasmicos_HF/liver/vseq_graphs_4/"
-# example 3
-# args[1] <- "D:/data/PESA_omicas/Comet-PTM-2a-5ta_Cohortes_V1/2a_Cohorte_120_V1/PESA2_TMT_ALL.for_vseq.2.csv"
-# args[2] <- "DiS"
-# args[3] <- "S:/U_Proteomica/PROYECTOS/PESA_omicas/2a_Cohorte_120_V1/Proteomics/TMT_mgf/"
-# args[4] <- "D:/data/PESA_omicas/Comet-PTM-2a-5ta_Cohortes_V1/2a_Cohorte_120_V1_Vseq.2/"
+# example 4
+args[1] <- "S:/U_Proteomica/PROYECTOS/PESA_omicas/Comet-PTM-2a-5ta_Cohortes_V1/NoDigPar/CometOnly/3d_analysis-6digitsCorrMassOK/vseq_input_data.csv"
 
-if ( length(args) < 4 ) {
+if ( length(args) < 1 ) {
   msg = paste0("\n",
                "At least four argument must be supplied.\n",
                "Usage: Vseq description...\n",
-               "R --vanilla --silent -f Vseq_pre.R --args ",
-               "  D:/data/GyGy_Dataset/input_for_vseq4.csv ",
-               "  DiS \n",
-               "  S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/mgf/ ",
-               "  S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/raws/ ",
-               "  D:/data/GyGy_Dataset/vseq_graphs_4/ ")
+               "R --vanilla --silent -f Vseq_pre.R --args test_input.csv")
   stop(msg, call.=FALSE)
 }
 
 infile2 <- args[1]
-data_type <- args[2]
-datapath <- args[3]
-outpath <- args[4]
 
-# delete slash that are the end
-datapath = sub("[\\]*$", "", datapath)
-outpath = sub("[\\]*$", "", outpath)
-datapath = sub("[/]*$", "", datapath)
-outpath = sub("[/]*$", "", outpath)
-# add last slash
-datapath = paste0(datapath, "/")
-outpath = paste0(outpath, "/")
-# normalize paths
-datapath = normalizePath(datapath)
-outpath = normalizePath(outpath)
+prepare_workspace <- function(experimento, mgfpath, dtapath, outpath){
+  # delete slash that are the end
+  mgfpath = sub("[\\]*$", "", mgfpath)  
+  dtapath = sub("[\\]*$", "", dtapath)
+  outpath = sub("[\\]*$", "", outpath)
+  dtapath = sub("[/]*$", "", dtapath)
+  outpath = sub("[/]*$", "", outpath)
+  # add last slash
+  mgfpath = paste0(mgfpath, "/")
+  dtapath = paste0(dtapath, "/")
+  outpath = paste0(outpath, "/")
+  # normalize paths
+  mgfpath = normalizePath(mgfpath)
+  dtapath = normalizePath(dtapath)
+  outpath = normalizePath(outpath)
+  # get dta path for experiment
+  dtapath <- paste0( dtapath, experimento, ".dta/" )
+  varNamePath <- paste0( outpath, experimento, "/" )
+  # create output dir if does not exist
+  dir.create(outpath, showWarnings = FALSE)
+  dir.create(varNamePath, showWarnings = FALSE)
+  
+  print(experimento)
+  print(mgfpath)
+  print(dtapath)
+  print(outpath)
+  print(varNamePath)
+  
+  return( list("mgfpath"=mgfpath, "dtapath"=dtapath, "outpath"=outpath, "varNamePath"=varNamePath) )
+}
 
-dir.create(outpath, showWarnings = FALSE)
 
 # set variables from input file
 infilter <- read.csv(infile2)
 experimentos <- sort( unique(infilter$Raw) )
 for(ex in 1:length(experimentos)) {
   experimento <- as.character( experimentos[ex] )
-  sql <- infilter[infilter$Raw == experimento,]
   experimento <- gsub( "WO_duplicate.txt$", "", experimento)
-  dtapath <- paste0( datapath, experimento, ".dta/" )
-  varNamePath <- paste0( outpath, experimento, "/" )
-  print(experimento)
-  print(datapath)
-  print(dtapath)
-  print(varNamePath)
-  dir.create(varNamePath, showWarnings = FALSE)
-  infile = paste0(datapath, experimento, ".mgf")  ## datos de las fragmentaciones mgf
-  fr_ns <- read.table(infile, sep = "\n")
+  experimento <- gsub( ".txt$", "", experimento)
+  experimento <- gsub( ".raw$", "", experimento)
+  sql <- infilter[infilter$Raw == experimento,]
+  # extract input parameters
+  data_type <- unique( sql[sql$type,c("type")] )
+  mgfpath   <- unique( sql[sql$type,c("mgfDir")] )
+  dtapath   <- unique( sql[sql$type,c("dtaDir")] )
+  outpath   <- unique( sql[sql$type,c("outDir")] )
+  # prepare directories
+  l <- prepare_workspace( experimento, mgfpath, dtapath, outpath )
+  mgfpath     <- l$mgfpath
+  dtapath     <- l$dtapath
+  outpath     <- l$outpath
+  varNamePath <- l$varNamePath
+  
+  ## datos de las fragmentaciones mgf
+  infile = paste0(mgfpath, experimento, ".mgf")
+  fr_ns <- fread(infile, sep="\n", header = FALSE)
 
   #################        obtener la tquery   ##################################
 
@@ -496,7 +499,7 @@ for(ex in 1:length(experimentos)) {
   names(tquery)[3] <- "INTENSITY"
   names(tquery)[4] <- "CHARGE"
   
-  varcon4 <- paste0(datapath,"tquery_",experimento, ".csv")
+  varcon4 <- paste0(outpath,"tquery_",experimento, ".csv")
   write.csv(tquery, varcon4)
   
   source("Vseq_launcher.R")

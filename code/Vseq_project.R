@@ -706,16 +706,16 @@ YDAGmax <- YDAGmax[,1] - len
 if (data_type == "DdS") {
   # begin: jmrc
   # 1: Extract the dta files when are located in the root
-  dtafiles <- data.frame(as.character(list.files(dtapath)))
+  # dtafiles <- data.frame(as.character(list.files(dtapath)))
   # Or
   # 2. Extract the dta files when are located in the subdirectory
-  # dfiles <- c()
-  # dtadirs = list.dirs(path = dtapath, full.names = TRUE, recursive = FALSE)
-  # for (dtadir in dtadirs) {
-  #   dfiles <- c( dfiles, list.files(dtadir) )
-  #   dtapath_sub <- paste0(dtadir, "/")
-  # }
-  # dtafiles <- data.frame( as.character(dfiles) )
+  dfiles <- c()
+  dtadirs = list.dirs(path = dtapath, full.names = TRUE, recursive = FALSE)
+  for (dtadir in dtadirs) {
+    dfiles <- c( dfiles, list.files(dtadir) )
+    dtapath_sub <- paste0(dtadir, "/")
+  }
+  dtafiles <- data.frame( as.character(dfiles) )
   # end: jmrc
   
   pauta <- as.data.frame(gregexpr("\\.", dtafiles[1,1]))  
@@ -731,9 +731,9 @@ if (data_type == "DdS") {
   
   # begin: jmrc
   # case 1: Extract the dta files when are located in the root
-  #dta_prec <- read.csv(paste0(dtapath_sub, dtamatrix[1,1]), sep = " ")
+  #dta_prec <- read.csv(paste0(dtapath, dtamatrix[1,1]), sep = " ")
   # case 2: Extract the dta files when are located in the subdirectory
-  dta_prec <- read.csv(paste0(dtapath, dtamatrix[1,1]), sep = " ")
+  dta_prec <- read.csv(paste0(dtapath_sub, dtamatrix[1,1]), sep = " ")
   # end: jmrc
   
   prec_bar <- subset(dta_prec, as.numeric(dta_prec[,1]) < massspec+3)
