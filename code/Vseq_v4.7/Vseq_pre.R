@@ -430,6 +430,7 @@ if ( length(args) < 4 ) {
                "R --vanilla --silent -f Vseq_pre.R --args ",
                "  D:/data/GyGy_Dataset/input_for_vseq4.csv ",
                "  DiS \n",
+               "  S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/mgf/ ",
                "  S:/U_Proteomica/UNIDAD/DatosCrudos/GyGy_Dataset/raws/ ",
                "  D:/data/GyGy_Dataset/vseq_graphs_4/ ")
   stop(msg, call.=FALSE)
