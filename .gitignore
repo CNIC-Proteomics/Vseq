@@ -6,5 +6,5 @@ server_table/vseq/*
 
 # Except this file
 !.gitignore
-code/*/.Rhistory
+code/.Rhistory
 .Rproj.user

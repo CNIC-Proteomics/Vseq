@@ -406,7 +406,7 @@ o= O + isobLab
 args = commandArgs(trailingOnly=TRUE)
 
 # example 4
-args[1] <- "S:/U_Proteomica/PROYECTOS/PESA_omicas/Comet-PTM-2a-5ta_Cohortes_V1/NoDigPar/CometOnly/3d_analysis-6digitsCorrMassOK/vseq_input_data.csv"
+# args[1] <- "test/vseq_input_data.csv"
 
 if ( length(args) < 1 ) {
   msg = paste0("\n",
