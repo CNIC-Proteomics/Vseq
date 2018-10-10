@@ -19,8 +19,31 @@ starttime <- Sys.time()
 # biocLite("Biostrings")
 
 # begin: jmrc
-.libPaths("D:/R/win-library/3.5")
+# .libPaths("D:/R/win-library/3.5")
 # end: jmrc
+
+# Install packages if they don't exit
+list.of.packages <- c("Maeswrap",
+"Maeswrap",
+"data.table",
+"ggplot2",
+"plotrix",
+"reshape",
+"MASS",
+"gridExtra",
+"grid",
+"rJava",
+"xlsx",
+"sqldf",
+"tcltk",
+"dplyr",
+"oce",
+"qpcR",
+"gdata",
+"tcR")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages, repos="http://cran.us.r-project.org")
+
 
 library(Maeswrap)
 library(data.table)
@@ -85,10 +108,10 @@ mod4 =45.04     #Nitration
 mod5= 79.966331  #phospho
 mod6= 153.023  #??????
 
-# U= M + mod
-B= W + mod2
-J= K + 8.014199
-# O= R + 10.008269
+U= C + mod
+B= A + mod
+J= F + mod
+# O= C + mod
 # Ñ= Y + mod4
 # end: jmrc
 AAS <- c(A,R,N,D,C,E,G,H,L,K,M,F,P,S,T,W,Y,V,B, Sp, Tp, Yp)
@@ -406,7 +429,7 @@ o= O + isobLab
 args = commandArgs(trailingOnly=TRUE)
 
 # example 4
-# args[1] <- "test/vseq_input_data.csv"
+# args[1] <- "D:/data/PESA_omicas/vseq_graphs_5/vseq_input_data5.csv"
 
 if ( length(args) < 1 ) {
   msg = paste0("\n",
