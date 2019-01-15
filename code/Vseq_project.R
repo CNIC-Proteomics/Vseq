@@ -795,7 +795,7 @@ z <-max(fppm)
 #varconc<- paste0(varNamePath,seq,"_",x,".tif")
 #tiff(filename = varconc, width = 54 ,height = 36, units = c("cm"), res = 90)
 
-varconc<- paste0(varNamePath,seq,"_",x,".png")
+varconc<- paste0(varNamePath,seq,"_",x,"_",experimento,".png")
 png(file = varconc, width = 54 ,height = 36, units = c("cm"), res = 90)
 # end: jmrc
 
